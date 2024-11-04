@@ -4,6 +4,31 @@ dotenv.config();
 
 const authMiddleWare = (req, res, next) => {
     const token = req.headers.token?.split(' ')[1];
+    const userId = req.params.id;
+    
+    jwt.verify(token, process.env.ACCESS_TOKEN_SECRET , function (err, user) {
+        if(err) {
+            console.error("JWT Verify Error:", err);
+            return res.status(404).json({
+                message: "The authenication",
+                status: "Error"
+            });
+        }
+        const payload = user;
+        if(payload?.isAdmin || payload?.id === userId) {
+            next();
+        }
+        else {
+            return res.status(404).json({
+                message: "Không tìm thấy user",
+                status: "Error"
+            });
+        }
+    });
+}
+
+const authUserMiddleWare = (req, res, next) => {
+    const token = req.headers.token?.split(' ')[1];
     
     jwt.verify(token, process.env.ACCESS_TOKEN_SECRET , function (err, user) {
         if(err) {
@@ -27,5 +52,6 @@ const authMiddleWare = (req, res, next) => {
 }
 
 module.exports = {
-    authMiddleWare
+    authMiddleWare,
+    authUserMiddleWare
 }

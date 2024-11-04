@@ -1,6 +1,6 @@
     const express = require('express');
     const userController = require('../controllers/UserController');
-const { authMiddleWare } = require('../middleware/authMiddleware');
+const { authMiddleWare, authUserMiddleWare } = require('../middleware/authMiddleware');
     const router = express.Router();
 
     //Bộ định tuyến gọi test api
@@ -9,7 +9,8 @@ const { authMiddleWare } = require('../middleware/authMiddleware');
     router.put('/update-user/:id', userController.updateUser);
     router.delete('/delete-user/:id',authMiddleWare ,userController.deleteUser);
     router.get('/getAll',authMiddleWare ,userController.getAllUser);
-    router.get('/get-details/:id' ,userController.getDetailsUser);
+    router.get('/get-details/:id',authUserMiddleWare ,userController.getDetailsUser);
+    router.post('/refresh-token' ,userController.refreshToken);
 
 
 

@@ -1,4 +1,5 @@
 const UserService = require('../services/UserService');
+const JwtService = require('../services/JwtService');
 
 const createUser = async (req,res) => {
     try {
@@ -135,11 +136,32 @@ const getDetailsUser = async (req,res) => {
     }
 }
 
+const refreshToken = async (req,res) => {
+    try {
+        const token = req.headers.token.split(' ')[1];
+        if(!token) {
+            return res.status(404).json({
+                status: "error",
+                message: "Token là bắt buộc"
+            });
+        }
+        
+        //Truyền req.body sang UserService gán vào newUser
+        const response = await JwtService.refreshTokenJwtService(token);
+        return res.status(200).json(response);
+    } catch (error) {
+        return res.status(404).json({
+            mesage: error
+        });
+    }
+}
+
 module.exports = {
     createUser,
     loginUser,
     updateUser,
     deleteUser,
     getAllUser,
-    getDetailsUser
+    getDetailsUser,
+    refreshToken
 };
