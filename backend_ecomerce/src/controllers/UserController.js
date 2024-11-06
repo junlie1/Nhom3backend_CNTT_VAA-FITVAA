@@ -8,19 +8,19 @@ const createUser = async (req,res) => {
         const isCheckEmail = reg.test(email);
         
         if(!email || !password || !confirmPassword) {
-            return res.status(500).json({
+            return res.status(400).json({
                 status: "error",
                 message: "Các trường dữ liệu là bắt buộc"
             });
         }
         else if (!isCheckEmail) {
-            return res.status(500).json({
+            return res.status(400).json({
                 status: "error",
                 message: "Bạn phải nhập đúng định dạng email"
             });
         }
         else if (password !== confirmPassword) {
-            return res.status(500).json({
+            return res.status(400).json({
                 status: "error",
                 message: "Hãy nhập password trùng confirmPassword"
             });
@@ -42,20 +42,28 @@ const loginUser = async (req,res) => {
         const isCheckEmail = reg.test(email);
         
         if(!email || !password) {
-            return res.status(500).json({
+            return res.status(400).json({
                 status: "error",
                 message: "Các trường dữ liệu là bắt buộc"
             });
         }
         else if (!isCheckEmail) {
-            return res.status(500).json({
+            return res.status(400).json({
                 status: "error",
                 message: "Bạn phải nhập đúng định dạng email"
             });
         }
         //Truyền req.body sang UserService gán vào newUser
         const response = await UserService.loginUser(req.body);
-        return res.status(200).json(response);
+        const {refresh_token, ...newResponse} = response;
+        console.log(refresh_token);
+        
+        res.cookie('refresh_token', refresh_token, {
+            HttpOnly: true,
+            Secure: true,
+
+        })
+        return res.status(200).json(newResponse);
     } catch (error) {
         return res.status(500).json({
             message : "Lỗi kết nối"
@@ -138,7 +146,7 @@ const getDetailsUser = async (req,res) => {
 
 const refreshToken = async (req,res) => {
     try {
-        const token = req.headers.token.split(' ')[1];
+        const token = req.cookies.token;
         if(!token) {
             return res.status(404).json({
                 status: "error",

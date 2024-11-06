@@ -4,7 +4,6 @@ dotenv.config();
 
 const authMiddleWare = (req, res, next) => {
     const token = req.headers.token?.split(' ')[1];
-    const userId = req.params.id;
     
     jwt.verify(token, process.env.ACCESS_TOKEN_SECRET , function (err, user) {
         if(err) {
@@ -14,8 +13,7 @@ const authMiddleWare = (req, res, next) => {
                 status: "Error"
             });
         }
-        const payload = user;
-        if(payload?.isAdmin || payload?.id === userId) {
+        if(user?.isAdmin) {
             next();
         }
         else {
@@ -29,7 +27,7 @@ const authMiddleWare = (req, res, next) => {
 
 const authUserMiddleWare = (req, res, next) => {
     const token = req.headers.token?.split(' ')[1];
-    
+    const userId = req.params.id
     jwt.verify(token, process.env.ACCESS_TOKEN_SECRET , function (err, user) {
         if(err) {
             console.error("JWT Verify Error:", err);
@@ -38,8 +36,7 @@ const authUserMiddleWare = (req, res, next) => {
                 status: "Error"
             });
         }
-        const payload = user;
-        if(payload?.isAdmin) {
+        if(user?.isAdmin || user?.id === userId) {
             next();
         }
         else {

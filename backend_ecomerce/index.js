@@ -3,6 +3,7 @@ const dotenv = require('dotenv');
 const mongoose = require('mongoose');
 const routes = require('./src/routes/index');
 const cors = require('cors');
+const cookieParser = require('cookie-parser')
 
 dotenv.config()
 
@@ -12,6 +13,7 @@ mongoose.connect('mongodb://127.0.0.1:27017/ecom_db');
 
 app.use(cors());
 app.use(express.json());
+app.use(cookieParser())
 app.use(express.urlencoded({ extended: true }));
 
 routes(app);
