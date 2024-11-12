@@ -115,7 +115,7 @@ const getAllProduct = (limit, page,sort, filter) => {
 
                 resolve({
                     status: 200,
-                    message: "Lấy thành công danh sách user theo sort",
+                    message: "Lấy thành công danh sách Product theo sort",
                     data: allProductSort,
                     total: totalProduct,
                     pageCurrent: Number(page + 1),
@@ -127,7 +127,7 @@ const getAllProduct = (limit, page,sort, filter) => {
             
             resolve({
                 status: 200,
-                message: "Lấy thành công danh sách user",
+                message: "Lấy thành công danh sách product",
                 data: allProduct,
                 total: totalProduct,
                 pageCurrent: Number(page + 1),
