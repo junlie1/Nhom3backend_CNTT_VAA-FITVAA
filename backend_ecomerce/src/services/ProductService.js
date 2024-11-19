@@ -25,7 +25,7 @@ const createProduct = (newProduct) => {
             });
             if(createdProduct) {
                 resolve({
-                    status: "200",
+                    status: "OK",
                     message: "Tạo thành công sản phẩm mới mới",
                     data: createdProduct
                 })
@@ -51,7 +51,7 @@ const updateProduct = (id, data) => {
             }
             const updatedProduct = await Product.findByIdAndUpdate(id, data, {new:true})
             resolve({
-                status: 200,
+                status: "OK",
                 message: "Đổi thông tin thành công",
                 data: updatedProduct
             })
@@ -76,7 +76,7 @@ const deleteProduct = (id) => {
             }
             await Product.findByIdAndDelete(id)
             resolve({
-                status: 200,
+                status: "OK",
                 message: "Xóa sản phẩm thành công"
             })
         } catch (error) {
