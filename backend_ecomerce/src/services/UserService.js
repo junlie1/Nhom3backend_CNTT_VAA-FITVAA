@@ -47,6 +47,7 @@ const loginUser = (userLogin) => {
             
             if(checkUser === null) {
                 return resolve({
+                    statusCode: 404,
                     status: 'error',
                     message: "Email chưa tồn tại. Hãy tạo mới 1 tài khoản"
                 });
@@ -55,6 +56,7 @@ const loginUser = (userLogin) => {
             const comparePassword = bcrypt.compareSync(password, checkUser.password);
             if(!comparePassword) {
                 return resolve({
+                    statusCode: 400,
                     status: 'error',
                     message: "Sai mật khẩu"
                 })
