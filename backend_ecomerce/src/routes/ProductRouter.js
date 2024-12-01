@@ -6,7 +6,7 @@ const { authMiddleWare } = require('../middleware/authMiddleware');
 
 //Bộ định tuyến gọi test api
 router.post('/create', ProductController.createProduct);
-router.put('/update/:id',/*authMiddleWare,*/ProductController.updateProduct);
+router.put('/update/:id',authMiddleWare,ProductController.updateProduct);
 router.get('/get-details/:id',ProductController.getDetailProduct);
 router.get('/get-all',ProductController.getAllProduct);
 router.delete('/delete/:id',ProductController.deleteProduct);

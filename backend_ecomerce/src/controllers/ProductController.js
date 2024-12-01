@@ -1,16 +1,17 @@
 const ProductService = require('../services/ProductService');
+const removeAccents = require('remove-accents');
 
 const createProduct = async (req,res) => {
     try {
-        const {name, image, type, price, countInStock,rating,description, discount} = req.body;
-        console.log('req.body', req.body);
-        if(!name || !image || !type || !price || !countInStock || !rating || !description || !discount) {
+        const {name, image, type, price, countInStock,rating,description} = req.body;
+        
+        if(!name || !image || !type || !price || !countInStock || !rating || !description) {
             return res.status(500).json({
                 status: "error",
                 message: "Các trường dữ liệu là bắt buộc"
             });
         }
-        //Truyền req.body sang UserService gán vào newUser
+ 
         const response = await ProductService.createProduct(req.body);
         return res.status(200).json(response);
     } catch (error) {
@@ -23,7 +24,7 @@ const createProduct = async (req,res) => {
 const updateProduct = async (req,res) => {
     try {
         const productId = req.params.id;
-        console.log("productId", productId);
+        console.log(productId);
         
         const data = req.body;
         if(!productId) {
@@ -63,18 +64,51 @@ const deleteProduct = async (req,res) => {
     }
 }
 
-const getAllProduct = async (req,res) => {
+const getAllProduct = async (req,res) => { 
     try {
-        const {limit,page, sort, filter} = req.query;
-        //Truyền req.body sang UserService gán vào newUser
-        const response = await ProductService.getAllProduct(Number(limit) || 8,Number(page) || 0 , sort , filter);
+        const { limit = 8, page = 0, sort = '', filter = '', search = '' } = req.query;  // thêm search //
+
+        let sortOption = {};
+        let filterOption = {};
+
+
+        // Sắp xếp
+        // Xác định tiêu chí sắp xếp
+        if (sort === 'price_asc') {
+            sortOption = { price: 1 }; // Giá tăng dần
+        } else if (sort === 'price_desc') {
+            sortOption = { price: -1 }; // Giá giảm dần
+        } else if (sort === 'rating_desc') {
+            sortOption = { rating: -1 }; // Đánh giá cao nhất
+        }
+
+
+        // Lọc
+        if (filter.trim() !== '') {
+            filterOption.type = { $regex: filter.trim(), $options: 'i' }; // Không phân biệt chữ hoa/thường
+        }
+
+        // Phân trang
+        const skip = page * limit;
+
+        if (search.trim() !== '') {
+            const normalizedSearch = removeAccents(search.trim().toLowerCase()); // Loại bỏ dấu
+            filterOption.$or = [
+                { nameNormalized: { $regex: normalizedSearch, $options: 'i' } },
+                { descriptionNormalized: { $regex: normalizedSearch, $options: 'i' } },
+            ];
+        }
+
+        const response = await ProductService.getAllProduct(filterOption, sortOption, skip, Number(limit));
         return res.status(200).json(response);
+
+
     } catch (error) {
+
         console.error("Lỗi", error);
-        
-        
         return res.status(404).json({
-            mesage: error
+            message: error || "Đã xảy ra lỗi khi lấy danh sách sản phẩm",
+
         });
     }
 }
@@ -89,7 +123,7 @@ const getDetailProduct = async (req,res) => {
             });
         }
         
-        //Truyền req.body sang UserService gán vào newUser
+
         const response = await ProductService.getDetailProduct(productId);
         return res.status(200).json(response);
     } catch (error) {

@@ -1,9 +1,10 @@
 const Product = require('../models/ProductModel');
+const removeAccents = require('remove-accents');
 
 const createProduct = (newProduct) => {
     return new Promise(async(resolve,reject) => {
         try {
-            const {name, image, type, price, countInStock,rating,description, discount} = newProduct;
+            const {name, image, type, price, countInStock,rating,description} = newProduct;
             const checkProduct = await Product.findOne({
                 name: name
             });
@@ -14,15 +15,19 @@ const createProduct = (newProduct) => {
                 })
             }
 
+            const nameNormalized = removeAccents(name.toLowerCase());
+            const descriptionNormalized = removeAccents(description.toLowerCase());
+
             const createdProduct = await Product.create({
                 name, 
+                nameNormalized,
                 image, 
                 type, 
                 price, 
                 countInStock,
                 rating,
                 description,
-                discount
+                descriptionNormalized
             });
             if(createdProduct) {
                 resolve({
@@ -87,58 +92,34 @@ const deleteProduct = (id) => {
     })
 }
 
-const getAllProduct = (limit, page,sort, filter) => {
-    return new Promise(async(resolve,reject) => {
+const getAllProduct = (filterOption, sortOption, skip, limit) => {
+    return new Promise(async (resolve, reject) => {
         try {
-            const totalProduct = await Product.countDocuments();
-            if (filter) {
-                const label = filter[0];
-                // console.log(label);
-                
-                const allObjectFilter = await Product.find({
-                    [label]: { '$regex': filter[1], '$options': 'i' }
-                }).limit(limit).skip(Number(limit) * Number(page));
-                resolve({
-                    status: 'OK',
-                    message: 'Success',
-                    data: allObjectFilter,
-                    total: totalProduct,
-                    pageCurrent: Number(page + 1),
-                    totalPage: Math.ceil(totalProduct / limit)
-                });
-            }
-            if(sort) {
-                const objectSort = {};
-                objectSort[sort[1]] = sort[0];
-                console.log("sort",sort);
-                console.log("objectSort", objectSort);
-                const allProductSort = await Product.find().limit(limit).skip(Number(limit) * Number(page)).sort(objectSort);
+            // Lấy tổng số sản phẩm theo filter nếu có
+            const totalProduct = await Product.countDocuments(filterOption);
 
-                resolve({
-                    status: 200,
-                    message: "Lấy thành công danh sách Product theo sort",
-                    data: allProductSort,
-                    total: totalProduct,
-                    pageCurrent: Number(page + 1),
-                    totalPage: Math.ceil(totalProduct / limit)
-                })
-            }
-            
-            const allProduct = await Product.find();
-            
+            // Truy vấn sản phẩm dựa vào filterOption và sortOption, với phân trang skip và limit
+            const products = await Product.find(filterOption)
+                .sort(sortOption)
+                .skip(skip)
+                .limit(limit);
+
             resolve({
-                status: 200,
-                message: "Lấy thành công danh sách product",
-                data: allProduct,
+                status: "OK",
+                message: "Lấy danh sách sản phẩm thành công",
+                data: products,
                 total: totalProduct,
-                pageCurrent: Number(page + 1),
-                totalPage: Math.ceil(totalProduct / limit)
+                pageCurrent: Math.ceil(skip / limit) + 1,
+                totalPage: Math.ceil(totalProduct / limit),
             });
         } catch (error) {
+            console.error("Lỗi trong getAllProduct:", error);
             reject(error);
         }
-    })
-}
+    });
+};
+
+
 
 const getDetailProduct = (id) => {
     return new Promise(async(resolve,reject) => {
@@ -156,7 +137,7 @@ const getDetailProduct = (id) => {
             resolve({
                 status: 200,
                 message: "Lấy thông tin thành công",
-                data: product
+                data: product //
             })
         } catch (error) {
             reject(error);
