@@ -2,9 +2,9 @@ const ProductService = require('../services/ProductService');
 
 const createProduct = async (req,res) => {
     try {
-        const {name, image, type, price, countInStock,rating,description} = req.body;
-        
-        if(!name || !image || !type || !price || !countInStock || !rating || !description) {
+        const {name, image, type, price, countInStock,rating,description, discount} = req.body;
+        console.log('req.body', req.body);
+        if(!name || !image || !type || !price || !countInStock || !rating || !description || !discount) {
             return res.status(500).json({
                 status: "error",
                 message: "Các trường dữ liệu là bắt buộc"
@@ -23,7 +23,7 @@ const createProduct = async (req,res) => {
 const updateProduct = async (req,res) => {
     try {
         const productId = req.params.id;
-        console.log(productId);
+        console.log("productId", productId);
         
         const data = req.body;
         if(!productId) {

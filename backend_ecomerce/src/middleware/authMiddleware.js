@@ -18,7 +18,7 @@ const authMiddleWare = (req, res, next) => {
         }
         else {
             return res.status(404).json({
-                message: "Không tìm thấy user",
+                message: "Không tìm thấy OK user",
                 status: "Error"
             });
         }
@@ -27,26 +27,26 @@ const authMiddleWare = (req, res, next) => {
 
 const authUserMiddleWare = (req, res, next) => {
     const token = req.headers.token?.split(' ')[1];
-    const userId = req.params.id
-    jwt.verify(token, process.env.ACCESS_TOKEN_SECRET , function (err, user) {
-        if(err) {
+    jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, function (err, user) {
+        if (err) {
             console.error("JWT Verify Error:", err);
             return res.status(404).json({
-                message: "The authenication",
+                message: "Authentication failed huhu",
                 status: "Error"
             });
         }
-        if(user?.isAdmin || user?.id === userId) {
+        if (user?.isAdmin || user) {
+            req.user = user; // Lưu thông tin user để sử dụng sau này
             next();
-        }
-        else {
+        } else {
             return res.status(404).json({
-                message: "Không tìm thấy user",
+                message: "User not found",
                 status: "Error"
             });
         }
     });
-}
+};
+
 
 module.exports = {
     authMiddleWare,

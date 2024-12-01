@@ -47,7 +47,6 @@ const loginUser = (userLogin) => {
             
             if(checkUser === null) {
                 return resolve({
-                    statusCode: 404,
                     status: 'error',
                     message: "Email chưa tồn tại. Hãy tạo mới 1 tài khoản"
                 });
@@ -56,13 +55,10 @@ const loginUser = (userLogin) => {
             const comparePassword = bcrypt.compareSync(password, checkUser.password);
             if(!comparePassword) {
                 return resolve({
-                    statusCode: 400,
                     status: 'error',
                     message: "Sai mật khẩu"
                 })
             }
-            const token = jwt.sign({id: checkUser._id}, "passwordKey");
-
             const access_token = await genneralAccessToken({
                 id: checkUser.id,
                 isAdmin: checkUser.isAdmin
@@ -76,9 +72,7 @@ const loginUser = (userLogin) => {
                 message: "Đăng nhập thành công",
                 data: checkUser,
                 access_token,
-                refresh_token,
-                token,
-                user: checkUser
+                refresh_token
             })
         } catch (error) {
             console.error('Login Error:', error);
