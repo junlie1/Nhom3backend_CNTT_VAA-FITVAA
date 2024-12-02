@@ -10,6 +10,7 @@ const userSchema = mongoose.Schema({
     avatar: {type: String},
     access_token: { type: String, required: false },
     refresh_token: { type: String, required: false },
+    city: {type: String},
 }, {
     timestamps: true  // Tự động thêm createdAt và updatedAt.
 });

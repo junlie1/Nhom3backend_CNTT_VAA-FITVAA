@@ -1,5 +1,6 @@
-const OrderService = require('../services/OrderService');
-const Order = require('../models/OrderProduct');
+const OrderService = require('../services/OrderService.js');
+const stripe = require('stripe')("sk_test_51QQAS0FV5SaBBPCR0envszYXsbSk9H8QsTVe4PWuunkI2jAe3BeX5oARpfiURXjLC5fuwmQOirKjshPHxCKFSLdU00rtNXalHf");
+
 
 const createOrder = async (req, res) => {
     try {
@@ -38,41 +39,6 @@ const createOrder = async (req, res) => {
 
         // Gọi OrderService để tạo đơn hàng
         const response = await OrderService.createOrder(req.body);
-        
-        // Nếu thanh toán bằng tiền mặt, chuyển hướng với orderId
-        if (paymentMethod === 'later_money' && response.data) {
-            return res.status(200).json({
-                ...response,
-                redirect: `/order-success?orderId=${response.data._id}`
-            });
-        }
-
-        // Lưu thông tin đơn hàng khi thanh toán thành công
-        if (paymentMethod === 'vnpay') {
-            // Lưu đơn hàng vào database
-            const orderData = {
-                orderItems,
-                shippingAddress: {
-                    fullName,
-                    address,
-                    city,
-                    phone,
-                },
-                paymentMethod,
-                itemsPrice,
-                shippingPrice,
-                totalPrice,
-                user,
-                isPaid: true, // Đánh dấu là đã thanh toán
-                paidAt: new Date(), // Thời gian thanh toán
-            };
-            const newOrder = await OrderService.createOrder(orderData);
-            return res.status(200).json({
-                status: "success",
-                orderId: newOrder.data._id // Trả về orderId
-            });
-        }
-
         return res.status(200).json(response);
     } catch (error) {
         console.error(error);
@@ -82,38 +48,94 @@ const createOrder = async (req, res) => {
         });
     }
 }
-
-const getDetailsOrder = async (req, res) => {
+const createOrderApp = async (req, res) => {
     try {
-        const orderId = req.params.id;
-        if (!orderId) {
-            return res.status(404).json({
-                status: "error",
-                message: "Không tìm thấy đơn hàng"
-            });
-        }
+        const {
+            paymentMethod,
+            itemsPrice,
+            shippingPrice,
+            totalPrice,
+            shippingAddress, // Lấy trực tiếp shippingAddress
+            orderItems,
+            user
+        } = req.body;
+    
+        console.log('shippingAddress:', shippingAddress);
         
-        const order = await Order.findById(orderId);
-        if (!order) {
-            return res.status(404).json({
+        // Kiểm tra các trường dữ liệu là bắt buộc
+        if (
+            !paymentMethod || 
+            !itemsPrice || 
+            !totalPrice || 
+            !shippingAddress || // Kiểm tra shippingAddress có tồn tại
+            !shippingAddress.fullName || // Kiểm tra các trường bên trong shippingAddress
+            !shippingAddress.address || 
+            !shippingAddress.city || 
+            !shippingAddress.phone || 
+            !orderItems || 
+            !user
+        ) {
+            return res.status(400).json({
                 status: "error",
-                message: "Không tìm thấy đơn hàng"
+                message: "Các trường dữ liệu là bắt buộc"
             });
         }
-
-        return res.status(200).json({
-            status: "success",
-            data: order
-        });
+    
+        // Gọi OrderService để tạo đơn hàng
+        const response = await OrderService.createOrderApp(req.body);
+        return res.status(200).json(response);
+    
     } catch (error) {
-        console.error('Get order details error:', error);
+        console.error(error);
         return res.status(500).json({
             status: "error",
-            message: "Lỗi server"
+            message: error.message || "Đã xảy ra lỗi"
         });
     }
 }
 
+const getDetailsOrder = async (req,res) => {
+    try {
+        const userId = req.params.id;
+        if(!userId) {
+            return res.status(404).json({
+                status: "error",
+                message: "Không tìm User"
+            });
+        }
+        
+        //Truyền req.body sang UserService gán vào newUser
+        const response = await OrderService.getOrderDetails(userId);
+        return res.status(200).json(response);
+    } catch (error) {
+        return res.status(404).json({
+            mesage: error
+        });
+    }
+}
+
+const paymentApp = async (req,res) => {
+    try {
+        const {amount, currency} = req.body;
+
+        const paymentIntent = await stripe.paymentIntents.create({
+            amount,
+            currency,
+        });
+
+        return res.status(200).json(paymentIntent);
+        } catch (e) {
+        return res.status(500).json({error:e.message});
+        }
+}
+const paymentAppIntent = async (req,res) => {
+    try {
+        const paymentIntent = await stripe.paymentIntents.retrieve(req.params.id);
+        return res.status(200).json(paymentIntent);
+    } catch (error) {
+        return res.status(500).json({error:e.message});
+    }
+}
 const getMyOrders = async (req, res) => {
     try {
         const userId = req.params.id; // Lấy userId từ params
@@ -126,10 +148,12 @@ const getMyOrders = async (req, res) => {
             message: "Lỗi khi lấy danh sách đơn hàng"
         });
     }
-};
-
+}
 module.exports = {
     createOrder,
+    createOrderApp,
     getDetailsOrder,
-    getMyOrders,
+    paymentApp,
+    paymentAppIntent,
+    getMyOrders
 };

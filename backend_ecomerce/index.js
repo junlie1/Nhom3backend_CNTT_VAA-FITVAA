@@ -11,7 +11,16 @@ const app = express();
 const PORT = process.env.PORT || 3001;
 mongoose.connect('mongodb://127.0.0.1:27017/ecom_db');
 
-app.use(cors());
+// Cấu hình CORS chi tiết hơn
+app.use(cors({
+    origin: 'http://localhost:3000', // URL của frontend React
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'token'],
+    credentials: true,
+    exposedHeaders: ['Content-Length', 'X-Foo', 'X-Bar']
+}));
+
+// Middleware
 app.use(express.json({ limit: '50mb' }));
 app.use(cookieParser());
 app.use(express.urlencoded({ limit: '50mb', extended: true }));
