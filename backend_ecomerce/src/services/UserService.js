@@ -59,6 +59,8 @@ const loginUser = (userLogin) => {
                     message: "Sai mật khẩu"
                 })
             }
+            const token = jwt.sign({id: checkUser._id}, "passwordKey");
+
             const access_token = await genneralAccessToken({
                 id: checkUser.id,
                 isAdmin: checkUser.isAdmin
@@ -72,7 +74,9 @@ const loginUser = (userLogin) => {
                 message: "Đăng nhập thành công",
                 data: checkUser,
                 access_token,
-                refresh_token
+                refresh_token,
+                token,
+                user: checkUser
             })
         } catch (error) {
             console.error('Login Error:', error);

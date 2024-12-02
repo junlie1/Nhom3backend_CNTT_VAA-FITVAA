@@ -1,5 +1,5 @@
+const { getType } = require('../controllers/ProductController');
 const Product = require('../models/ProductModel');
-const removeAccents = require('remove-accents');
 
 const createProduct = (newProduct) => {
     return new Promise(async(resolve,reject) => {
@@ -15,19 +15,14 @@ const createProduct = (newProduct) => {
                 })
             }
 
-            const nameNormalized = removeAccents(name.toLowerCase());
-            const descriptionNormalized = removeAccents(description.toLowerCase());
-
             const createdProduct = await Product.create({
                 name, 
-                nameNormalized,
                 image, 
                 type, 
                 price, 
                 countInStock,
                 rating,
-                description,
-                descriptionNormalized
+                description
             });
             if(createdProduct) {
                 resolve({
@@ -92,34 +87,54 @@ const deleteProduct = (id) => {
     })
 }
 
-const getAllProduct = (filterOption, sortOption, skip, limit) => {
+const getAllProduct = (limit, page, sort, filter) => {
     return new Promise(async (resolve, reject) => {
         try {
-            // Lấy tổng số sản phẩm theo filter nếu có
-            const totalProduct = await Product.countDocuments(filterOption);
-
-            // Truy vấn sản phẩm dựa vào filterOption và sortOption, với phân trang skip và limit
-            const products = await Product.find(filterOption)
-                .sort(sortOption)
-                .skip(skip)
-                .limit(limit);
-
+            const totalProduct = await Product.find()
+            let allProduct = []
+            if (filter) {
+                const label = filter[0];
+                const allObjectFilter = await Product.find({ [label]: { '$regex': filter[1] } }).limit(limit).skip(page * limit).sort({createdAt: -1, updatedAt: -1})
+                resolve({
+                    status: 'OK',
+                    message: 'Success',
+                    data: allObjectFilter,
+                    total: totalProduct,
+                    pageCurrent: Number(page + 1),
+                    totalPage: Math.ceil(totalProduct / limit)
+                })
+            }
+            if (sort) {
+                const objectSort = {}
+                objectSort[sort[1]] = sort[0]
+                const allProductSort = await Product.find().limit(limit).skip(page * limit).sort(objectSort).sort({createdAt: -1, updatedAt: -1})
+                resolve({
+                    status: 'OK',
+                    message: 'Success',
+                    data: allProductSort,
+                    total: totalProduct,
+                    pageCurrent: Number(page + 1),
+                    totalPage: Math.ceil(totalProduct / limit)
+                })
+            }
+            if(!limit) {
+                allProduct = await Product.find().sort({createdAt: -1, updatedAt: -1})
+            }else {
+                allProduct = await Product.find().limit(limit).skip(page * limit).sort({createdAt: -1, updatedAt: -1})
+            }
             resolve({
-                status: "OK",
-                message: "Lấy danh sách sản phẩm thành công",
-                data: products,
+                status: 'OK',
+                message: 'Success',
+                data: allProduct,
                 total: totalProduct,
-                pageCurrent: Math.ceil(skip / limit) + 1,
-                totalPage: Math.ceil(totalProduct / limit),
-            });
-        } catch (error) {
-            console.error("Lỗi trong getAllProduct:", error);
-            reject(error);
+                pageCurrent: Number(page + 1),
+                totalPage: Math.ceil(totalProduct / limit)
+            })
+        } catch (e) {
+            reject(e)
         }
-    });
-};
-
-
+    })
+}
 
 const getDetailProduct = (id) => {
     return new Promise(async(resolve,reject) => {
@@ -137,8 +152,24 @@ const getDetailProduct = (id) => {
             resolve({
                 status: 200,
                 message: "Lấy thông tin thành công",
-                data: product //
+                data: product
             })
+        } catch (error) {
+            reject(error);
+        }
+    })
+}
+
+const getAllType = () => {
+    return new Promise(async(resolve,reject) => {
+        try {
+                const allType = await Product.distinct('type');
+
+                resolve({
+                    status: 200,
+                    message: "Lấy thành công danh sách Type",
+                    data: allType,
+            });
         } catch (error) {
             reject(error);
         }
@@ -150,5 +181,6 @@ module.exports = {
     updateProduct,
     deleteProduct,
     getDetailProduct,
-    getAllProduct
+    getAllProduct,
+    getAllType
 };
