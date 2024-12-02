@@ -2,6 +2,7 @@ const User = require('../models/UserModel');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const { genneralAccessToken,genneralRefreshToken } = require('./JwtService');
+//Xem có update đc ko
 
 const createUser = (newUser) => {
     return new Promise(async(resolve,reject) => {

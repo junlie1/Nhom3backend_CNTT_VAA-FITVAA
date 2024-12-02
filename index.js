@@ -16,7 +16,7 @@ mongoose.connect('mongodb+srv://letrung:trung2432004@cluster0.z6zsx.mongodb.net/
 
 // Cấu hình CORS chi tiết hơn
 app.use(cors({
-    origin: 'http://localhost:3000', // URL của frontend React
+    origin: 'http://localhost:8000', // URL của frontend React
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization', 'token'],
     credentials: true,
