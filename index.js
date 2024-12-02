@@ -9,7 +9,10 @@ dotenv.config()
 
 const app = express();
 const PORT = process.env.PORT || 3001;
-mongoose.connect('mongodb://127.0.0.1:27017/ecom_db');
+mongoose.connect('mongodb+srv://letrung:trung2432004@cluster0.z6zsx.mongodb.net/ecom_db')
+    .then(() => console.log("Conneect thành công"))
+    .catch(err => console.log("Connect error",err))
+
 
 // Cấu hình CORS chi tiết hơn
 app.use(cors({
