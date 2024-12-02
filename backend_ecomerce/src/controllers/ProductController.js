@@ -109,6 +109,22 @@ const getAllProduct = async (req,res) => {
         });
     }
 }
+
+getAllProductType = async (req,res) => {
+    try {
+        const {limit,page, sort, filter} = req.query;
+        //Truyền req.body sang UserService gán vào newUser
+        const response = await ProductService.getAllProductType(Number(limit) || 8,Number(page) || 0 , sort , filter);
+        return res.status(200).json(response);
+    } catch (error) {
+        console.error("Lỗi", error);
+        
+        
+        return res.status(404).json({
+            mesage: error
+        });
+    }
+}
 const getAllProductApp = async (req,res) => {
     try {
         //Truyền req.body sang UserService gán vào newUser
@@ -163,5 +179,6 @@ module.exports = {
     getDetailProduct,
     getAllProduct,
     getAllProductApp,
-    getAllType
+    getAllType,
+    getAllProductType
 };
