@@ -81,7 +81,7 @@ const getAllProduct = async (req,res) => {
             sortOption = { rating: -1 }; // Đánh giá cao nhất
         }
 
-
+``
             // Lọc
             if (filter.trim() !== '') {
                 filterOption.type = { $regex: filter.trim(), $options: 'i' }; // Không phân biệt chữ hoa/thường
