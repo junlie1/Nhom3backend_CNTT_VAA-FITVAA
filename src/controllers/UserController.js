@@ -64,7 +64,7 @@ const loginUser = async (req,res) => {
             samesite: 'strict'
 
         })
-        return res.status(200).json({...newResponse,refreshToken});
+        return res.status(200).json({...newResponse,refresh_token});
     } catch (error) {
         return res.status(500).json({
             message : "Lỗi kết nối"
